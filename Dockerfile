@@ -22,5 +22,5 @@ WORKDIR /app
 # Expose the default vLLM API port
 EXPOSE 8000
 
-# Default command to start vLLM OpenAI API server
-CMD ["python3", "-m", "vllm.entrypoints.openai.api_server", "--host", "0.0.0.0", "--port", "8000"]
+# Use ENTRYPOINT so arguments can be passed to vllm
+ENTRYPOINT ["python3", "-m", "vllm.entrypoints.openai.api_server", "--host", "0.0.0.0"]
