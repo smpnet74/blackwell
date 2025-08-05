@@ -45,7 +45,7 @@ RUN git clone https://github.com/vllm-project/vllm.git && \
     VLLM_NCCL_ROOT=/usr/local pip3 install -e .
 
 # Production stage
-FROM nvidia/cuda:12.4-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
 
 # Set environment variables for multi-GPU support
 ENV DEBIAN_FRONTEND=noninteractive
