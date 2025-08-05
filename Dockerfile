@@ -1,5 +1,5 @@
-# Use NVIDIA's PyTorch container with RTX 5090/Blackwell support
-FROM nvcr.io/nvidia/pytorch:25.02-py3
+# Use PyTorch container with CUDA 12.8 support (compatible with RTX 5090/Blackwell CUDA 12.9)
+FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-devel
 
 # Set environment variables for RTX 5090
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
@@ -13,12 +13,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone and install vLLM from source
-WORKDIR /tmp
-RUN git clone https://github.com/vllm-project/vllm.git && \
-    cd vllm && \
-    git checkout v0.10.0 && \
-    pip install -e . --no-build-isolation
+# Install vLLM via pip
+RUN pip install vllm==0.10.0
 
 # Create working directory
 WORKDIR /app
