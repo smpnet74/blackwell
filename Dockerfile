@@ -1,5 +1,5 @@
 # Multi-stage build for vLLM with RTX 5090 multi-GPU support
-FROM nvidia/cuda:12.4-devel-ubuntu22.04 as builder
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 as builder
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
