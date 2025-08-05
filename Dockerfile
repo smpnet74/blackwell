@@ -1,5 +1,5 @@
 # Multi-stage build for vLLM with RTX 5090 multi-GPU support
-FROM nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04 as builder
+FROM nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04 AS builder
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -22,8 +22,8 @@ RUN apt-get update && apt-get install -y \
 # Create symlinks for python
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 
-# Upgrade pip
-RUN python3 -m pip install --upgrade pip
+# Use pip with --break-system-packages for all installs (skip upgrade)
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Build and install latest NCCL to fix P2P issues with RTX 5090
 WORKDIR /tmp
@@ -59,7 +59,7 @@ ENV NCCL_SOCKET_IFNAME=^docker0,lo
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
-    libaio1 \
+    libaio-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create symlinks for python
