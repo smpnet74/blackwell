@@ -1,5 +1,5 @@
 # Multi-stage build for vLLM with RTX 5090 multi-GPU support
-FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 as builder
+FROM nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04 as builder
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -34,8 +34,8 @@ RUN git clone https://github.com/NVIDIA/nccl.git && \
     make install && \
     ldconfig
 
-# Install PyTorch with CUDA 12.4 support
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# Install PyTorch with CUDA 12.9 support (using CUDA 12.1 wheel as it's compatible)
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 # Clone and build vLLM from source with custom NCCL
 WORKDIR /tmp
@@ -45,7 +45,7 @@ RUN git clone https://github.com/vllm-project/vllm.git && \
     VLLM_NCCL_ROOT=/usr/local pip3 install -e .
 
 # Production stage
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
 
 # Set environment variables for multi-GPU support
 ENV DEBIAN_FRONTEND=noninteractive
