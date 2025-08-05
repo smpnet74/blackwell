@@ -7,6 +7,14 @@ ENV TORCH_CUDA_ARCH_LIST="12.0"
 ENV FORCE_CUDA=1
 ENV VLLM_FLASH_ATTN_VERSION=2
 
+# NCCL environment variables to fix communication issues
+ENV NCCL_DEBUG=INFO
+ENV NCCL_TIMEOUT=1800
+ENV NCCL_P2P_DISABLE=0
+ENV NCCL_IB_DISABLE=1
+ENV NCCL_SOCKET_IFNAME=lo
+ENV NCCL_ASYNC_ERROR_HANDLING=1
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
