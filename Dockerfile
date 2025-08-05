@@ -9,8 +9,8 @@ ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    python3.10 \
-    python3.10-dev \
+    python3 \
+    python3-dev \
     python3-pip \
     git \
     wget \
@@ -20,8 +20,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create symlinks for python
-RUN ln -sf /usr/bin/python3.10 /usr/bin/python3 && \
-    ln -sf /usr/bin/python3.10 /usr/bin/python
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # Upgrade pip
 RUN python3 -m pip install --upgrade pip
@@ -58,21 +57,20 @@ ENV NCCL_SOCKET_IFNAME=^docker0,lo
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
-    python3.10 \
+    python3 \
     python3-pip \
     libaio1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create symlinks for python
-RUN ln -sf /usr/bin/python3.10 /usr/bin/python3 && \
-    ln -sf /usr/bin/python3.10 /usr/bin/python
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # Copy NCCL libraries from builder
 COPY --from=builder /usr/local/lib/libnccl* /usr/local/lib/
 COPY --from=builder /usr/local/include/nccl.h /usr/local/include/
 
 # Copy Python packages from builder
-COPY --from=builder /usr/local/lib/python3.10/dist-packages /usr/local/lib/python3.10/dist-packages
+COPY --from=builder /usr/local/lib/python3.*/dist-packages /usr/local/lib/python3.12/dist-packages
 
 # Update library cache
 RUN ldconfig
