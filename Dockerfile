@@ -41,7 +41,7 @@ RUN pip3 install torch torchvision torchaudio --index-url https://download.pytor
 WORKDIR /tmp
 RUN git clone https://github.com/vllm-project/vllm.git && \
     cd vllm && \
-    git checkout v0.6.0 && \
+    git checkout v0.10.0 && \
     VLLM_NCCL_ROOT=/usr/local pip3 install -e .
 
 # Production stage
