@@ -1,79 +1,24 @@
-# Multi-stage build for vLLM with RTX 5090 multi-GPU support
-FROM nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04 AS builder
+# Use NVIDIA's PyTorch container with RTX 5090/Blackwell support
+FROM nvcr.io/nvidia/pytorch:25.02-py3
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-ENV CUDA_HOME=/usr/local/cuda
-ENV PATH=${CUDA_HOME}/bin:${PATH}
-ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+# Set environment variables for RTX 5090
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV TORCH_CUDA_ARCH_LIST="12.0"
+ENV FORCE_CUDA=1
+ENV VLLM_FLASH_ATTN_VERSION=2
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-dev \
-    python3-pip \
     git \
-    wget \
     build-essential \
-    cmake \
-    libaio-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Create symlinks for python
-RUN ln -sf /usr/bin/python3 /usr/bin/python
-
-# Use pip with --break-system-packages for all installs (skip upgrade)
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
-
-# Build and install latest NCCL to fix P2P issues with RTX 5090
-WORKDIR /tmp
-RUN git clone https://github.com/NVIDIA/nccl.git && \
-    cd nccl && \
-    make -j src.build && \
-    make install && \
-    ldconfig
-
-# Install PyTorch with CUDA 12.9 support (using CUDA 12.1 wheel as it's compatible)
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# Clone and build vLLM from source with custom NCCL
+# Clone and install vLLM from source
 WORKDIR /tmp
 RUN git clone https://github.com/vllm-project/vllm.git && \
     cd vllm && \
     git checkout v0.10.0 && \
-    VLLM_NCCL_ROOT=/usr/local pip3 install -e .
-
-# Production stage
-FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
-
-# Set environment variables for multi-GPU support
-ENV DEBIAN_FRONTEND=noninteractive
-ENV CUDA_HOME=/usr/local/cuda
-ENV PATH=${CUDA_HOME}/bin:${PATH}
-ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:/usr/local/lib:${LD_LIBRARY_PATH}
-ENV NCCL_P2P_DISABLE=1
-ENV NCCL_IB_DISABLE=1
-ENV NCCL_SOCKET_IFNAME=^docker0,lo
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    libaio-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create symlinks for python
-RUN ln -sf /usr/bin/python3 /usr/bin/python
-
-# Copy NCCL libraries from builder
-COPY --from=builder /usr/local/lib/libnccl* /usr/local/lib/
-COPY --from=builder /usr/local/include/nccl.h /usr/local/include/
-
-# Copy Python packages from builder
-COPY --from=builder /usr/local/lib/python3.*/dist-packages /usr/local/lib/python3.12/dist-packages
-
-# Update library cache
-RUN ldconfig
+    pip install -e . --no-build-isolation
 
 # Create working directory
 WORKDIR /app
